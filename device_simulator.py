@@ -76,6 +76,7 @@ class EdmDataSimulator:
 				if isStarted == False:
 					prev_watt_hour = [0] * 24
 					prev_timestamp = int(time.time())
+					isStarted = True
 
 			act_pwrs = device_info['app_pwr']
 			curr_watt_hour = self.calWattHourByActPwr(act_pwrs, prev_watt_hour)
