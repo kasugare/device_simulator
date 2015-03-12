@@ -21,6 +21,13 @@ $ python client_options.py -v --sids=123,234 --dids=1111,1123 --interval=1 -peri
   			help="""make lots of noise 
   			[options] -v
   			[default: %default]""")
+		parser.add_option("-a", "--apikeys", 
+			action="store", 
+			dest="apikeys", 
+			default="EDM1a",
+			help="""device type : EDM1a, EDM1b, EDM1c
+			[options] -d EDM1a  or  --devicetype=EDM1a
+			[default: %default]""")
 		parser.add_option("-s", "--sids", 
 			action="store", 
 			dest="sids", 
@@ -48,13 +55,6 @@ $ python client_options.py -v --sids=123,234 --dids=1111,1123 --interval=1 -peri
 			default="1",
 			help="""sampling period: : Assuming that this interval timestamp is in seconds
 			[options] -p 1  or  --period=1
-			[default: %default]""")
-		parser.add_option("-k", "--apikeys", 
-			action="store", 
-			dest="apikeys", 
-			default="EDM1c",
-			help="""device type : EDM1a, EDM1b, EDM1c
-			[options] -d EDM1a  or  --devicetype=EDM1a
 			[default: %default]""")
 		parser.add_option("-m", "--mode",
 			action="store",

@@ -44,7 +44,7 @@ class EdmDataSimulator:
 		thread_print.start()
 
 		while True:
-			user_query = raw_input("[Quit] pleased, if you want to quit, press 'q' or 'Q' : ")
+			user_query = raw_input("[Quit] press 'q' or 'Q' : ")
 			if user_query == 'q' or user_query == 'Q':
 				THREAD_STATUS = False
 				sys.exit(1)
