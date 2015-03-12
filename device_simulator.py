@@ -32,8 +32,8 @@ class EdmDataSimulator:
 		
 		for index in range(len(self.option_obj)):
 			apikey, sid, did, sp, interval = self.option_obj[index].getOptions()
-
-			thread_obj = threading.Thread(target=self.doGeneration, args=(apikey, sid, did, sp, interval))
+			mode = self.user_options.get('mode')
+			thread_obj = threading.Thread(target=self.doGeneration, args=(apikey, sid, did, sp, interval, mode))
 			thread_obj.setDaemon(1)
 			thread_obj.start()
 			thread_obj.setName("%s_%s" %(sid, did))
@@ -49,7 +49,7 @@ class EdmDataSimulator:
 				THREAD_STATUS = False
 				sys.exit(1)
 		
-	def doGeneration(self, apikey, sid, did, sp, interval = 0):
+	def doGeneration(self, apikey, sid, did, sp, interval = 0, mode = 'constant'):
 		prev_watt_hour = []
 		prev_timestamp = 0
 		isStarted = False
@@ -58,19 +58,24 @@ class EdmDataSimulator:
 			voltage = self.genVoltage()
 			device_info = self.genDefaultFeederData()
 			
-			if isStarted == False:
-				history_path = './conf/history.log'
-				history = ConfigParser.RawConfigParser()
-				history.read(history_path)
-				section = "%d_%d" %(sid, did)
-				if history.has_section(section):
-					prev_watt_hour = history.get(section, 'watt_hour')
-					prev_watt_hour = self.convertStringToIntegerList(prev_watt_hour)
-					prev_timestamp = history.get(section, 'timestamp')
-				else:
-					prev_watt_hour = device_info['watt_hour']
+			if self.user_options.get('mode') == 'constant':
+				if isStarted == False:
+					history_path = './conf/history.log'
+					history = ConfigParser.RawConfigParser()
+					history.read(history_path)
+					section = "%d_%d" %(sid, did)
+					if history.has_section(section):
+						prev_watt_hour = history.get(section, 'watt_hour')
+						prev_watt_hour = self.convertStringToIntegerList(prev_watt_hour)
+						prev_timestamp = history.get(section, 'timestamp')
+					else:
+						prev_watt_hour = device_info['watt_hour']
+						prev_timestamp = int(time.time())
+					isStarted = True
+			else:
+				if isStarted == False:
+					prev_watt_hour = [0] * 24
 					prev_timestamp = int(time.time())
-				isStarted = True
 
 			act_pwrs = device_info['app_pwr']
 			curr_watt_hour = self.calWattHourByActPwr(act_pwrs, prev_watt_hour)
@@ -101,6 +106,8 @@ class EdmDataSimulator:
 		curr_watt_hour = []
 		for index in range(len(act_pwrs)):
 			act_pwr = act_pwrs[index]
+			if act_pwr == 0:
+				act_pwr = 1
 			watt_hour = int(prev_watt_hour[index]) + float(act_pwr)/3600
 			curr_watt_hour.append(int(watt_hour))
 		return curr_watt_hour
@@ -207,8 +214,8 @@ class EdmDataSimulator:
 
 	def calPowerData(self):
 		def_pwr = int(200 * random.randrange(3000, 50000))
-		act_pwr = float(def_pwr * 10)
-		ract_pwr = float(def_pwr)
+		act_pwr = int(def_pwr * 10)
+		ract_pwr = int(def_pwr)
 		app_pwr = int(math.sqrt(act_pwr ** 2 + ract_pwr ** 2))
 		curr_pwr = int(app_pwr / 10. / 220. * 10000.)
 		return act_pwr, ract_pwr, app_pwr, curr_pwr
