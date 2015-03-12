@@ -38,7 +38,7 @@ $ python client_options.py -v --sids=123,234 --dids=1111,1123 --interval=1 -peri
 		parser.add_option("-i", "--interval", 
 			action="store", 
 			dest="interval", 
-			default="60",
+			default="1",
 			help="""interval time: Assuming that this interval timestamp is in seconds. It will be increated timestamp %default secodns per 1 second.
 			[options] -i 1  or  --interval=1
 			[default: %default]""")
