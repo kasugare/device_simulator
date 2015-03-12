@@ -7,18 +7,25 @@ import socket, threading
 import struct
 from Queue import Queue
 
-IS_RUN_THREAD = True
+THREAD_STATUS = True
 DATA_QUEUE = Queue()
 
 class EdmDataSimulator:
-	SERVER_IP 	= 'localhost'# '54.65.159.198'
-	SERVER_PORT	= 5010
+	SERVER_IP 	= 'localhost'
+	SERVER_PORT	= 0
 
 	def __init__(self):
+		self.__config__()
 		user_option_parser = UserOptionParser()
 		self.user_options, self.option_obj = user_option_parser.getOptions()
-		print self.user_options
 		self.__doProcess__()
+
+	def __config__(self, config_section = 'SERVER'):
+		config_path = './conf/conf.ini'
+		config = ConfigParser.RawConfigParser()
+		config.read(config_path)
+		self.SERVER_IP = config.get(config_section, 'host')
+		self.SERVER_PORT = int(config.get(config_section, 'port'))
 
 	def __doProcess__(self):
 		thread_list = []
@@ -39,7 +46,7 @@ class EdmDataSimulator:
 		while True:
 			user_query = raw_input("[Quit] pleased, if you want to quit, press 'q' or 'Q' : ")
 			if user_query == 'q' or user_query == 'Q':
-				IS_RUN_THREAD = False
+				THREAD_STATUS = False
 				sys.exit(1)
 		
 	def doGeneration(self, apikey, sid, did, sp, interval = 0):
@@ -47,12 +54,12 @@ class EdmDataSimulator:
 		prev_timestamp = 0
 		isStarted = False
 
-		while IS_RUN_THREAD:
+		while THREAD_STATUS:
 			voltage = self.genVoltage()
 			device_info = self.genDefaultFeederData()
 			
 			if isStarted == False:
-				history_path = './conf/history'
+				history_path = './conf/history.log'
 				history = ConfigParser.RawConfigParser()
 				history.read(history_path)
 				section = "%d_%d" %(sid, did)
@@ -209,7 +216,7 @@ class EdmDataSimulator:
 	def sendHexData(self, dummyData):
 		try:
 			soc = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-			soc.connect((self.SERVER_IP,self.SERVER_PORT))
+			soc.connect((self.SERVER_IP, self.SERVER_PORT))
 			soc.send(dummyData)
 			soc.close()
 		except Exception, e:
@@ -230,7 +237,7 @@ class EdmDataSimulator:
 					self.printMessage(rawData)
 
 	def saveHistory(self, timestamp, sid, did, watt_hours):
-		history_path = './conf/history'
+		history_path = './conf/history.log'
 		history = ConfigParser.RawConfigParser()
 		watt_hours = ','.join(watt_hours)
 
